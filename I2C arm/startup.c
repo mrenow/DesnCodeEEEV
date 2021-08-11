@@ -32,7 +32,7 @@ int main(void){
 void initI2C(void){
 		// Enable interrupts from change in SI flag
 	VICIntEnable = B(9);
-	I20CONSET = 0x40
+	I20CONSET = 0x40;
 }
 
 void initPins(void){

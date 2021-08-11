@@ -1,0 +1,9 @@
+Dependencies for Project 'I2C_ARM', Target 'Target 1': (DO NOT MODIFY !)
+F (.\LPC2400.s)(0x532BC792)(--cpu ARM7TDMI --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Philips--list .\lpc2400.lst --xref -o .\lpc2400.o --depend .\lpc2400.d)
+F (.\startup.c)(0x610D3D62)(-c --cpu ARM7TDMI -D__EVAL -g -O0 --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Philips-o .\startup.o --omf_browse .\startup.crf --depend .\startup.d)
+I (lpc24xx.h)(0x610D3D62)
+I (peripheral.h)(0x610CFBB5)
+F (.\communication.s)(0x610D3D62)(--cpu ARM7TDMI --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Philips--list .\communication.lst --xref -o .\communication.o --depend .\communication.d)
+F (.\initialize.c)(0x610D3D62)(-c --cpu ARM7TDMI -D__EVAL -g -O0 --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Philips-o .\initialize.o --omf_browse .\initialize.crf --depend .\initialize.d)
+I (lpc24xx.h)(0x610D3D62)
+F (.\bat_ram.s)(0x610D34D5)(--cpu ARM7TDMI --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\Philips--list .\bat_ram.lst --xref -o .\bat_ram.o --depend .\bat_ram.d)

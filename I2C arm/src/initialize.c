@@ -1,11 +1,6 @@
 #include "lpc24xx.h"
 #include "peripheral.h"
 
-#define BMASK(start, end) ((0xFFFFFFFF>>(31-(end)+(start)))<<(start))
-#define B(n) 1<<n
-#define BIT_WRITE(reg, val, start, end) reg=(reg&~BMASK(start, end))|(val<<start);
-
-
 extern void write_flash(int data, char len);
 /*
  * Assume that the external 32.786kHz clock is configured externally
@@ -33,7 +28,7 @@ void init_rtc(short year, char month, short doy, char dom, char dow, char hour, 
 	// Alarm mask register is set to only consider number of minutes
 	RTC_AMR = ~B(1);
 	// Set alarm two minutes from now
-	RTC_ALMIN = RTC_MIN + 2;
+	RTC_ALMIN = (RTC_MIN + 2)%60;
 	
 	// Enable clock 
 	RTC_CCR = 0x11; // CLKEN=1, CLKSRC=1
@@ -57,8 +52,10 @@ void init_rtc(short year, char month, short doy, char dom, char dow, char hour, 
  */
 
 void init_flash(){
+	int i = 0;
+	peripheral_t *prphls = ALL_PRPHLS;
 	
-	write_flash(0, 32); // Length register
+	write_flash(0, 32); // Length register. Automatically increments on write.
 	write_flash(RTC_MIN, 6);   // 0 to 59
 	write_flash(RTC_HOUR, 5);  // 0 to 23
 	write_flash(RTC_DOM, 5);   // 1 to 31 
@@ -67,11 +64,11 @@ void init_flash(){
 	// Its word aligned!! wtf!! :)
 	write_flash(N_PRPHLS, 8);
 	
-	peripheral_t prphls[N_PRPHLS] = ALL_PRPHLS;
-	for (int i = 0; i < N_PRPHLS; i++){
+	while (i < N_PRPHLS){
 		write_flash(prphls[i].bit_len, 8);
+		i	++;
 	}
 	
-	// align to next word
-	write_flash(0, 4-(N_PRPHLS % 4));
+	// align to next word for convenient reading in future
+	write_flash(0, 8*(4-(N_PRPHLS % 4)));
 }

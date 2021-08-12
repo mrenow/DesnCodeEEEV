@@ -1,7 +1,3 @@
-				AREA communication CODE
-				
-				EXPORT read_i2c;
-	
 I2C0_BASE 		EQU 0xE001C000
 	
 I2C0NSET		EQU 0x00
@@ -16,6 +12,10 @@ AA				EQU 0x04; Acknowledge bit
 SI				EQU 0x08; 
 STO				EQU 0x10
 STA				EQU 0x20
+				
+				AREA communication, CODE
+				
+				EXPORT read_i2c;
 
 ; Variables:
 ; 	V1: Global I2C0_Base
@@ -28,7 +28,7 @@ STA				EQU 0x20
 ; 	an infinite loop if not setup correctly.
 ;
 read_i2c; (char addr, char req) A3 dirty.
-				STMFD SP! {V1, V5, V6, LR}
+				STMFD SP!, {V1, V5, V6, LR}
 				
 				LDR V1, =I2C0_BASE ; GLOBAL variable for base. 
 				
@@ -58,7 +58,7 @@ start_transmission
 				
 				;MOV A1, A1; A1  already set in return value
 				; Do not stop transmission until the end
-				LDMFD SP! {V1, V5, V6, LR}
+				LDMFD SP!, {V1, V5, V6, LR}
 				MOV PC, LR
 				
 ; Similar to send data, but the start bit is sent first.
@@ -122,4 +122,5 @@ resume_loop
 
 				MOV PC, LR
 
+				END
 

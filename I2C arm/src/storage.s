@@ -1,12 +1,13 @@
-				AREA bat_ram CODE
+RAM_BASE		EQU 0xE0084000
+RAM_END			EQU 0xE00847FF
+
+				AREA bat_ram, CODE
 
 				EXPORT record_meas;
 				EXPORT write_flash;
 				EXPORT begin_flash;
 				EXPORT end_flash;
 					
-RAM_BASE		EQU 0xE0084000
-RAM_END			EQU 0xE00847FF
 
 ; Records each measurement without byte alignment for maximum storage.
 ; First two bytes of memory designate the next free byte.
@@ -35,3 +36,4 @@ write_flash; (int data, char len)
 
 
 
+				END

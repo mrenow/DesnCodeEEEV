@@ -1,47 +1,47 @@
 #include "lpc24xx.h"
 #include "peripheral.h"
+#include "communication.h"
 
 #define BATRAM_BASE 0xE0084000
-#define BMASK(start, end) ((0xFFFFFFFF>>(31-(end)+(start)))<<(start))
-#define B(n) 1<<n
-#define BIT_WRITE(reg, val, start, end) reg=(reg&~BMASK(start, end))|(val<<start);
 
 // Assume clock rate is configured as 10MHZ
 
-
-void initPins(void);
-void initI2C(void);
-
+void init_pins(void);
+void init_i2c(void);
+void sleep(void);
+void set_alarm(void);
 	
 // Called on every wakeup
 int main(void){
+	RTC_ALMIN = (RTC_MIN + MEAS_PERIOD) % 60; // set alarm immediately. 
 	INTWAKE = B(15); // RTC enabled to wake from deep power-down
-	initPins();
 	
+	init_pins();
 	// Set up the power registers
 	
-	// Only keep I2c. RTC is not needed as it does not run off the PCLK.
+	// Only keep I2c and SPI. RTC is not needed as it does not run off the PCLK.
 	// However, to set the RTC to a correct value, bit 9 must be enabled.
-	// RTC initialization can be done using an interrupt routine, but this
-	// will not be implemnted.
-	PCONP = B(7); 
+	// RTC initialization can be done using an interrupt routine in initialize.c
+	PCONP = B(7) | B(8); 
 	// Setup 
+	init_i2c();
+	record_data();
 	
-	
+	PCON = 0x9E; // deep power down with all brownout mechanisms disabled
 }
 
-void initI2C(void){
-	// Enable interrupts from change in SI flag
-	VICIntEnable = B(9);
+void init_i2c(void){
+	// No interrupts: polling used
+	// VICIntEnable = B(9);
 	I20CONSET = 0x40;
-	// Set i2c frequency to be 100kHZ
+	// Set i2c frequency to be 100kHz @ PCLK=10MHz
 	I20SCLL = 50;
 	I20SCLH = 50;
 	// Setup I2C for sending data
 	I20CONSET = B(6); //EN
 }
 
-void initPins(void){
+void init_pins(void){
 
 	// I2C0
 	BIT_WRITE(PINSEL1, 0x1, 22, 23);

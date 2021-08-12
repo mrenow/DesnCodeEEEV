@@ -1,25 +1,20 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-
+#define BMASK(start, end) ((0xFFFFFFFF>>(31-(end)+(start)))<<(start))
+#define B(n) ((unsigned)(1<<n))
+#define BIT_WRITE(reg, val, start, end) reg=(reg&~BMASK(start, end))|(((unsigned)val)<<start);
 
 typedef struct peripheral{
 	char bit_len;
 	char slave_addr;
-	char n_req;
-	char *req_data;
+	char req_data[];
 } peripheral_t;
 
-char MAX44009_data[2] = {0x03, 0x04};
+extern char N_PRPHLS;
+extern peripheral_t *ALL_PRPHLS;
 
-#define MAX44009 	((peripheral_t){12, 0x94, 2, MAX44009_data})
-//#define TMP117 		((peripheral_t){16, 0x90, })
-//#define MMC3316xMT ((peripheral_t){48, 0x30}) 
-
-#define N_PRPHLS 1
-#define ALL_PRPHLS {MAX44009}
-
-#define MEAS_PERIOD 120 // in seconds
+#define MEAS_PERIOD 2 // in minutes
 
 #endif
 

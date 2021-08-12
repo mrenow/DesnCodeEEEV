@@ -12,7 +12,6 @@ RAM_END			EQU 0xE00847FF
 ; First two bytes of memory designate the next free byte.
 ;
 
-
 record_meas;(int data, char len)
 				; If ram cannot contain next word, write all of ram to flash
 				
@@ -27,6 +26,7 @@ record_meas;(int data, char len)
 begin_flash; ()
 
 
+end_flash; ()
 
 write_flash; (int data, char len)
 ; IMPORTANT: write data BEFORE changing length register at 0x0
@@ -35,5 +35,3 @@ write_flash; (int data, char len)
 
 
 
-
-end_flash; ()

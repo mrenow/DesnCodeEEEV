@@ -13,16 +13,24 @@ RAM_END			EQU 0xE00847FF
 ; First two bytes of memory designate the next free byte.
 ;
 
-record_meas;(int data, char len)
+record_meas;(int data - 4 bytes,) 
 				; If ram cannot contain next word, write all of ram to flash
-				
+	
 				
 				;
-				MOV A1, #RAM_BASE
-				LDRH A2, [A1]; A1 = N bits
-				; Store in ram
-				STRH A2, [A1]
-				MOV PC, LR
+				LDR A2, =RAM_BASE
+				LDRH A3, [A2]; A3 = N bits
+				ADD A3, #4
+				LDR A4, =RAM_END
+				ADD V1, A2, A3
+				CMP V1, A4
+				STRHHI A3, [A2]
+				ADDHI A2, A2, A3
+				STRHI A1, [A2]
+				MOVHI PC, LR
+				BL begin_flash
+
+				BL end_flash
 
 begin_flash; ()
 

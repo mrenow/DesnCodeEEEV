@@ -1,7 +1,9 @@
 #include "lpc24xx.h"
 #include "peripheral.h"
 
-extern void write_flash(int data, char len);
+extern void write_flash(int data);
+extern void begin_spi();
+extern void reset_spi();
 /*
  * Assume that the external 32.786kHz clock is configured externally
  * This function will only need to be called once on device initialization,
@@ -54,21 +56,22 @@ void init_rtc(short year, char month, short doy, char dom, char dow, char hour, 
 void init_flash(){
 	int i = 0;
 	peripheral_t *prphls = ALL_PRPHLS;
-	
-	write_flash(0, 32); // Length register. Automatically increments on write.
-	write_flash(RTC_MIN, 6);   // 0 to 59
-	write_flash(RTC_HOUR, 5);  // 0 to 23
+	begin_spi();
+	write_flash(0); // Length register. Automatically increments on write.
+	write_flash(((((RTC_MIN | RTC_HOUR << 6) | RTC_DOM << 11) | RTC_MONTH << 16) | RTC_MONTH << 20));   // 0 to 59 is min
+	/*write_flash(RTC_HOUR, 5);  // 0 to 23
 	write_flash(RTC_DOM, 5);   // 1 to 31 
 	write_flash(RTC_MONTH, 4); // 1 to 12
-	write_flash(RTC_YEAR, 12); // 0 to 4096
+	write_flash(RTC_YEAR, 12); // 0 to 4096*/
 	// Its word aligned!! wtf!! :)
-	write_flash(N_PRPHLS, 8);
+	write_flash(N_PRPHLS);
 	
 	while (i < N_PRPHLS){
-		write_flash(prphls[i].bit_len, 8);
+		write_flash(prphls[i].bit_len);
 		i	++;
 	}
+	end_spi();
 	
 	// align to next word for convenient reading in future
-	write_flash(0, 8*(4-(N_PRPHLS % 4)));
+	// write_flash(0, 8*(4-(N_PRPHLS % 4)));
 }

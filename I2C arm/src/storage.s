@@ -1,12 +1,31 @@
 RAM_BASE		EQU 0xE0084000
 RAM_END			EQU 0xE00847FF
 
+SPI0_BASE		EQU	0xE0020000
+PINSEL_BASE		EQU 0xE002C000
+PINSEL1        	EQU 0x04
+GPIO_BASE		EQU 0xE0028000
+IOSET0          EQU 0x04
+IODIR0          EQU 0x08
+
+
+S0SPCR         	EQU 0x00
+S0SPSR         	EQU 0x04
+S0SPDR        	EQU 0x08
+S0SPCCR        	EQU 0x0C
+
+SCB_BASE 		EQU 0xE01FC000
+PCONP           EQU 0xC4
+
+SPIO_SEL		EQU 0x00010000
+SPI0_MSTR		EQU 0x20
+SPIF			EQU 0x80
 				AREA bat_ram, CODE
 
 				EXPORT record_meas;
 				EXPORT write_flash;
-				EXPORT begin_flash;
-				EXPORT end_flash;
+				EXPORT begin_spi;
+				EXPORT reset_spi;
 					
 
 ; Records each measurement without byte alignment for maximum storage.
@@ -15,9 +34,8 @@ RAM_END			EQU 0xE00847FF
 
 record_meas;(int data - 4 bytes,) 
 				; If ram cannot contain next word, write all of ram to flash
-	
-				
-				;
+				STMFD SP!, {V1, V2, LR}
+
 				LDR A2, =RAM_BASE
 				LDRH A3, [A2]; A3 = N bits
 				ADD A3, #4
@@ -43,16 +61,94 @@ end_loop_write
 				BL write_flash
 				BL end_flash
 
-begin_flash; ()
+				LDMFD SP!, {V1, V2, LR}
+				MOV PC, LR
 
+begin_spi; ()
+				STMFD SP!, {V1, V2, V3, LR}
+				LDR V1, =SCB_BASE_ADDR
+				MOV V2, #1, LSL #8
+				STRB V2, [V1, #PCONP]; set pconp bit
+				LDR V1, =SPI0_BASE
+				MOV V2, 0x00
+				STRB V2, [V1, #S0SPCR]; send reset to make sure spi is cleared before use just as is done in reset_spi but yeah
+				LDR V3, =PINSEL_BASE
+				MOV V2, 0xC, LSL #28
+				STR V2, [V3]; setup SPI SCK
+				MOV V2 0x0000003C
+				STR V2, [V3, #PINSEL1]; setup SPI_SEL, MISO nd MOSI
+				LDR V3, =GPIO_BASE
+				LDR V2, =SPI_SEL
+				STR V2, [V3, #IODIR0]
+				STR V2, [V3, #IOSET0]
+				MOV V2, 0x8
+				STR V2, [V1, #S0SPCCR]; Set spi0 clock
+				LDR V2, =SPI0_MSTR
+				STRB V2, [V1, #S0SPCR]; set s0spcr to master mode
+				LDMFD SP!, {V1, V2, V3, LR}	
 
-end_flash; ()
+reset_spi; () we reset the spi control register
+				STMFD SP!, {V1, V2, LR}
+				LDR V1, =SPI0_BASE
+				MOV V2, 0x00
+				STRB V2, [V1, #S0SPCR]
+				LDMFD SP!, {V1, V2, LR}
+				MOV PC, LR
 
 write_flash; (int data)
-; IMPORTANT: write data BEFORE changing length register at 0x0
-; This is because in initialization, we write 0x00000000 to initialize the
-; length register.
+				STMFD SP!, {V1, V2, V3, LR}
+				LDR V1, =SPI0_BASE
+				MOV V3, A1
 
+				MOV V2, V3, ROR #24
+				STRB V2, [V1, #S0SPDR]
+				BL wait_finish
+				MOV V2, V3, ROR #16
+				STRB V2, [V1, #S0SPDR]
+				BL wait_finish
+				MOV V2, V3, ROR #8
+				STRB V2, [V1, #S0SPDR]
+				BL wait_finish
+				STRB V3, [V1, #S0SPDR]
+				BL wait_finish
+				LDMFD SP!, {V1, V2, V3, LR}
+				MOV PC, LR
+
+wait_finish
+				STMFD SP!, {V1, V2, LR}
+				LDR V1, =SPI0_BASE
+				LDR V2, [V1, #S0SPSR]
+				LDR A1, =#SPIF
+				TEQ V2, A1
+				BNE wait_finish
+				LDMFD SP!, {V1, V2, LR}
+				MOV PC, LR
+
+/*void SPISend( BYTE *buf, DWORD Length )
+{
+  DWORD i;
+  BYTE Dummy;
+
+  if ( Length == 0 )
+	return;
+  for ( i = 0; i < Length; i++ )
+  {
+	S0SPDR = *buf;
+#if INTERRUPT_MODE
+	/* In the interrupt, there is nothing to be done if TX_DONE, SPI transfer 
+	complete bit, is not set, so it's polling if the flag is set or not which 
+	is being handled inside the ISR. Not an ideal example but show how the 
+	interrupt is being set and handled. 
+	while ( (SPI0Status & SPI0_TX_DONE) != SPI0_TX_DONE );
+	SPI0Status &= ~SPI0_TX_DONE;
+#else
+	while ( !(S0SPSR & SPIF) );
+#endif
+	Dummy = S0SPDR;		/* Flush the RxFIFO 
+	buf++;
+  }
+  return; 
+}*/
 
 
 				END

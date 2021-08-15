@@ -124,31 +124,5 @@ wait_finish
 				LDMFD SP!, {V1, V2, LR}
 				MOV PC, LR
 
-/*void SPISend( BYTE *buf, DWORD Length )
-{
-  DWORD i;
-  BYTE Dummy;
-
-  if ( Length == 0 )
-	return;
-  for ( i = 0; i < Length; i++ )
-  {
-	S0SPDR = *buf;
-#if INTERRUPT_MODE
-	/* In the interrupt, there is nothing to be done if TX_DONE, SPI transfer 
-	complete bit, is not set, so it's polling if the flag is set or not which 
-	is being handled inside the ISR. Not an ideal example but show how the 
-	interrupt is being set and handled. 
-	while ( (SPI0Status & SPI0_TX_DONE) != SPI0_TX_DONE );
-	SPI0Status &= ~SPI0_TX_DONE;
-#else
-	while ( !(S0SPSR & SPIF) );
-#endif
-	Dummy = S0SPDR;		/* Flush the RxFIFO 
-	buf++;
-  }
-  return; 
-}*/
-
 
 				END
